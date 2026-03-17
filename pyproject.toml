@@ -3,7 +3,7 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "MontjoyPlaces"
+name = "montjoyplaces"
 version = "1.0.0"
 description = "Official Python SDK for the Montjoy Places API."
 readme = "README.md"
@@ -28,8 +28,8 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://montjoyplaces.com"
-Repository = "https://montjoyplaces.com"
-Support = "mailto:paul@montjoyapp.com"
+Repository = "https://github.com/MontjoyPlaces/MontjoyPlaces-Python-SDK"
+Support = "https://montjoyplaces.com/contact"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
