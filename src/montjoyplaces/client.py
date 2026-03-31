@@ -6,6 +6,7 @@ from urllib import error, parse, request
 
 from .exceptions import MontjoyPlacesError
 from .models import (
+    BillingPlansResponse,
     CategoryChildrenResponse,
     CategoryResponse,
     CategorySearchResponse,
@@ -26,6 +27,8 @@ from .models import (
     LookupNearestUsCitiesParams,
     OverrideRequest,
     OverrideResponse,
+    PlanCatalogEntry,
+    PlaceSingleResponse,
     SearchCategoriesParams,
     SearchPlacesParams,
     SearchResponse,
@@ -39,6 +42,7 @@ from .models import (
     parse_category_lookup_row,
     parse_custom_place,
     parse_group,
+    parse_place,
     parse_search_resolved,
     parse_search_row,
     parse_us_city,
@@ -71,6 +75,11 @@ class MontjoyPlaces:
 
     def __exit__(self, exc_type: object, exc: object, tb: object) -> None:
         self.close()
+
+    def list_billing_plans(self) -> BillingPlansResponse:
+        payload = self._request("GET", "/billing/plans")
+        payload["plans"] = [from_payload(plan, PlanCatalogEntry) for plan in payload["plans"]]
+        return from_payload(payload, BillingPlansResponse)
 
     def who_am_i(self) -> WhoAmIResponse:
         return from_payload(self._request("GET", "/v1/whoami"), WhoAmIResponse)
@@ -120,6 +129,12 @@ class MontjoyPlaces:
         payload = self._request("POST", f"/v1/custom-places/{parse.quote(custom_place_id, safe='')}/hide", body=body)
         payload["row"] = parse_custom_place(payload["row"])
         return from_payload(payload, CustomPlaceSingleResponse)
+
+    def get_place(self, place_id: str) -> PlaceSingleResponse:
+        payload = self._request("GET", f"/v1/places/{parse.quote(place_id, safe='')}")
+        if payload["row"] is not None:
+            payload["row"] = parse_place(payload["row"])
+        return from_payload(payload, PlaceSingleResponse)
 
     def override_place(self, fsq_place_id: str, body: OverrideRequest | dict[str, Any]) -> OverrideResponse:
         payload = self._request("PUT", f"/v1/places/{parse.quote(fsq_place_id, safe='')}/override", body=body)

@@ -21,6 +21,27 @@ def _parse_datetime(value: str | None) -> datetime | None:
 
 
 @dataclass
+class PlanCatalogEntry:
+    code: str
+    label: str
+    monthlyRequests: int | None
+    maxTenants: int | None
+    maxApps: int | None
+    maxApiKeys: int | None
+    overageAllowed: bool
+    overageBlockRequests: int
+    overageBlockPriceCents: int
+    maxUsageMultiplier: int | None
+    hardCapByDefault: bool
+
+
+@dataclass
+class BillingPlansResponse:
+    ok: bool
+    plans: list[PlanCatalogEntry]
+
+
+@dataclass
 class WhoAmIResponse:
     ok: bool
     apiKeyId: str
@@ -28,6 +49,34 @@ class WhoAmIResponse:
     appId: str
     keyName: str
     prefix: str
+
+
+@dataclass
+class Place:
+    fsq_place_id: str
+    place_source: Literal["fsq", "address"]
+    name: str
+    latitude: float
+    longitude: float
+    address: str | None = None
+    locality: str | None = None
+    region: str | None = None
+    postcode: str | None = None
+    country: str | None = None
+    website: str | None = None
+    tel: str | None = None
+    email: str | None = None
+    formatted_address: str | None = None
+    geocode_provider: str | None = None
+    geocode_confidence: float | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+@dataclass
+class PlaceSingleResponse:
+    ok: bool
+    row: Place | None
 
 
 @dataclass
@@ -125,20 +174,28 @@ SearchRow = Union[SearchRowGlobal, SearchRowCustom]
 class SearchResolvedCenter:
     lat: float
     lon: float
-    source: Literal["request", "locality"]
+    source: Literal["request", "locality", "address_cache", "address_geocode"]
     kind: str
     label: str
 
 
 @dataclass
 class SearchResolved:
-    mode: Literal["nearby", "typeahead", "category"]
+    mode: Literal["address", "nearby", "typeahead", "category"]
     reason: str | None = None
     prefix: str | None = None
     categoryName: str | None = None
     groupId: str | None = None
     customOnly: bool | None = None
     localityText: str | None = None
+    addressQuery: str | None = None
+    addressPlaceId: str | None = None
+    formattedAddress: str | None = None
+    geocodeProvider: str | None = None
+    geocodeCacheHit: bool | None = None
+    addressRadiusMeters: float | None = None
+    addressCandidateCount: int | None = None
+    addressFilteredCount: int | None = None
     center: SearchResolvedCenter | None = None
 
 
@@ -358,6 +415,7 @@ class SearchPlacesParams:
     forceTypeahead: bool | None = None
     customOnly: bool | None = None
     onlyCustom: bool | None = None
+    isAddress: bool | None = None
     groupId: str | None = None
 
 
@@ -391,6 +449,13 @@ def parse_group(payload: dict[str, Any]) -> Group:
     data = dict(payload)
     data["created_at"] = _parse_datetime(data["created_at"])
     return from_payload(data, Group)
+
+
+def parse_place(payload: dict[str, Any]) -> Place:
+    data = dict(payload)
+    data["created_at"] = _parse_datetime(data.get("created_at"))
+    data["updated_at"] = _parse_datetime(data.get("updated_at"))
+    return from_payload(data, Place)
 
 
 def parse_custom_place(payload: dict[str, Any]) -> CustomPlace:

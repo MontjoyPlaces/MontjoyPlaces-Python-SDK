@@ -1,13 +1,15 @@
 import os
 import time
 
-from montjoy_places import (
+from montjoyplaces import (
     CustomPlaceCreateRequest,
     CustomPlaceHideRequest,
     CustomPlaceUpdateRequest,
     GroupCreateRequest,
     ListCustomPlacesParams,
     MontjoyPlaces,
+    SearchPlacesParams,
+    SearchRowGlobal,
 )
 
 
@@ -24,6 +26,9 @@ def main() -> None:
 
     with MontjoyPlaces(api_key) as client:
         try:
+            plans = client.list_billing_plans()
+            print("billing plans:", [plan.code for plan in plans.plans])
+
             created_group = client.create_group(GroupCreateRequest(name=group_name))
             group_id = created_group.row.group_id
             print("created group:", created_group.row)
@@ -70,6 +75,12 @@ def main() -> None:
                 ListCustomPlacesParams(groupId=group_id, limit=10, includeHidden=True)
             )
             print("group custom places:", [row.name for row in custom_places.rows])
+
+            search = client.search_places(SearchPlacesParams(q="coffee near Boston MA", limit=3))
+            first_place_id = next((row.fsq_place_id for row in search.rows if isinstance(row, SearchRowGlobal)), None)
+            if first_place_id:
+                place = client.get_place(first_place_id)
+                print("direct place lookup:", place.row)
         finally:
             if custom_place_id:
                 try:
