@@ -49,6 +49,7 @@ class WhoAmIResponse:
     appId: str
     keyName: str
     prefix: str
+    readOnly: bool
 
 
 @dataclass
@@ -146,9 +147,31 @@ class CustomPlacesListResponse:
 
 
 @dataclass
+class CustomPlacesExportResponse:
+    ok: bool
+    count: int
+    rows: list[CustomPlace]
+    nextCursor: str | None
+
+
+@dataclass
 class CustomPlaceSingleResponse:
     ok: bool
     row: CustomPlace
+
+
+@dataclass
+class ImportedCustomPlace(CustomPlace):
+    _import_action: Literal["created", "updated"] | None = None
+
+
+@dataclass
+class CustomPlacesImportResponse:
+    ok: bool
+    imported: int
+    created: int
+    updated: int
+    rows: list[ImportedCustomPlace]
 
 
 @dataclass
@@ -329,6 +352,23 @@ class CustomPlaceCreateRequest:
 
 
 @dataclass
+class CustomPlaceImportRow(CustomPlaceCreateRequest):
+    customPlaceId: str | None = None
+    custom_place_id: str | None = None
+    group_id: str | None = None
+    fsq_place_id: str | None = None
+    owner_user_id: str | None = None
+
+
+@dataclass
+class CustomPlacesImportRequest:
+    mode: Literal["upsert", "create"] | None = None
+    groupId: str | None = None
+    rows: list[CustomPlaceImportRow] | None = None
+    places: list[CustomPlaceImportRow] | None = None
+
+
+@dataclass
 class CustomPlaceUpdateRequest:
     name: str | None = None
     latitude: float | None = None
@@ -352,6 +392,14 @@ class CustomPlaceHideRequest:
 
 @dataclass
 class ListCustomPlacesParams:
+    groupId: str | None = None
+    limit: int | None = None
+    cursor: str | None = None
+    includeHidden: bool | Literal["0", "1"] | None = None
+
+
+@dataclass
+class ExportCustomPlacesParams:
     groupId: str | None = None
     limit: int | None = None
     cursor: str | None = None
@@ -463,6 +511,13 @@ def parse_custom_place(payload: dict[str, Any]) -> CustomPlace:
     data["created_at"] = _parse_datetime(data["created_at"])
     data["updated_at"] = _parse_datetime(data["updated_at"])
     return from_payload(data, CustomPlace)
+
+
+def parse_imported_custom_place(payload: dict[str, Any]) -> ImportedCustomPlace:
+    data = dict(payload)
+    data["created_at"] = _parse_datetime(data["created_at"])
+    data["updated_at"] = _parse_datetime(data["updated_at"])
+    return from_payload(data, ImportedCustomPlace)
 
 
 def parse_search_row(payload: dict[str, Any]) -> SearchRow:

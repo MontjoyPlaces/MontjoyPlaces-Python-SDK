@@ -14,8 +14,12 @@ from .models import (
     CustomPlaceHideRequest,
     CustomPlaceSingleResponse,
     CustomPlaceUpdateRequest,
+    CustomPlacesExportResponse,
+    CustomPlacesImportRequest,
+    CustomPlacesImportResponse,
     CustomPlacesListResponse,
     DeleteResponse,
+    ExportCustomPlacesParams,
     GetCategoryChildrenParams,
     GroupCreateRequest,
     GroupDeleteResponse,
@@ -42,6 +46,7 @@ from .models import (
     parse_category_lookup_row,
     parse_custom_place,
     parse_group,
+    parse_imported_custom_place,
     parse_place,
     parse_search_resolved,
     parse_search_row,
@@ -106,6 +111,16 @@ class MontjoyPlaces:
         payload = self._request("GET", "/v1/custom-places", query=params)
         payload["rows"] = [parse_custom_place(row) for row in payload["rows"]]
         return from_payload(payload, CustomPlacesListResponse)
+
+    def export_custom_places(self, params: ExportCustomPlacesParams | dict[str, Any] | None = None) -> CustomPlacesExportResponse:
+        payload = self._request("GET", "/v1/custom-places/export", query=params)
+        payload["rows"] = [parse_custom_place(row) for row in payload["rows"]]
+        return from_payload(payload, CustomPlacesExportResponse)
+
+    def import_custom_places(self, body: CustomPlacesImportRequest | dict[str, Any]) -> CustomPlacesImportResponse:
+        payload = self._request("POST", "/v1/custom-places/import", body=body)
+        payload["rows"] = [parse_imported_custom_place(row) for row in payload["rows"]]
+        return from_payload(payload, CustomPlacesImportResponse)
 
     def create_custom_place(self, body: CustomPlaceCreateRequest | dict[str, Any]) -> CustomPlaceSingleResponse:
         payload = self._request("POST", "/v1/custom-places", body=body)

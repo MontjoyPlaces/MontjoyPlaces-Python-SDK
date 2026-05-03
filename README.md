@@ -27,7 +27,7 @@ pip install .
 Create a client with your Montjoy Places API key:
 
 ```python
-from montjoy_places import MontjoyPlaces
+from montjoyplaces import MontjoyPlaces
 
 client = MontjoyPlaces("your-api-key")
 ```
@@ -37,7 +37,7 @@ The SDK sends the API key using the `X-API-Key` header.
 ## Quick Start
 
 ```python
-from montjoy_places import MontjoyPlaces, SearchPlacesParams
+from montjoyplaces import MontjoyPlaces, SearchPlacesParams
 
 client = MontjoyPlaces("your-api-key")
 
@@ -59,7 +59,7 @@ finally:
 The SDK supports the default API base URL:
 
 ```python
-from montjoy_places import MontjoyPlaces
+from montjoyplaces import MontjoyPlaces
 
 client = MontjoyPlaces("your-api-key")
 ```
@@ -85,7 +85,7 @@ print(who_am_i)
 ### List Groups
 
 ```python
-from montjoy_places import ListGroupsParams
+from montjoyplaces import ListGroupsParams
 
 groups = client.list_groups(ListGroupsParams(limit=10))
 ```
@@ -93,7 +93,7 @@ groups = client.list_groups(ListGroupsParams(limit=10))
 ### Create a Group
 
 ```python
-from montjoy_places import GroupCreateRequest
+from montjoyplaces import GroupCreateRequest
 
 created_group = client.create_group(GroupCreateRequest(name="Favorites"))
 ```
@@ -101,7 +101,7 @@ created_group = client.create_group(GroupCreateRequest(name="Favorites"))
 ### Search Places
 
 ```python
-from montjoy_places import SearchPlacesParams
+from montjoyplaces import SearchPlacesParams
 
 search = client.search_places(
     SearchPlacesParams(
@@ -115,7 +115,7 @@ search = client.search_places(
 ### Create a Custom Place
 
 ```python
-from montjoy_places import CustomPlaceCreateRequest
+from montjoyplaces import CustomPlaceCreateRequest
 
 created = client.create_custom_place(
     CustomPlaceCreateRequest(
@@ -138,7 +138,7 @@ created = client.create_custom_place(
 ### Update a Custom Place
 
 ```python
-from montjoy_places import CustomPlaceUpdateRequest
+from montjoyplaces import CustomPlaceUpdateRequest
 
 updated = client.update_custom_place(
     "custom_place_id",
@@ -152,7 +152,7 @@ updated = client.update_custom_place(
 ### Hide or Unhide a Custom Place
 
 ```python
-from montjoy_places import CustomPlaceHideRequest
+from montjoyplaces import CustomPlaceHideRequest
 
 client.hide_custom_place("custom_place_id", CustomPlaceHideRequest(hidden=True))
 client.hide_custom_place("custom_place_id", CustomPlaceHideRequest(hidden=False))
@@ -164,10 +164,36 @@ client.hide_custom_place("custom_place_id", CustomPlaceHideRequest(hidden=False)
 deleted = client.delete_custom_place("custom_place_id")
 ```
 
+### Export and Import Custom Places
+
+```python
+from montjoyplaces import CustomPlaceImportRow, CustomPlacesImportRequest, ExportCustomPlacesParams
+
+exported = client.export_custom_places(
+    ExportCustomPlacesParams(groupId="group_123", includeHidden=True)
+)
+
+imported = client.import_custom_places(
+    CustomPlacesImportRequest(
+        mode="upsert",
+        rows=[
+            CustomPlaceImportRow(
+                custom_place_id=row.custom_place_id,
+                group_id=row.group_id,
+                name=row.name,
+                latitude=row.latitude,
+                longitude=row.longitude,
+            )
+            for row in exported.rows
+        ],
+    )
+)
+```
+
 ### Override a Place
 
 ```python
-from montjoy_places import OverrideRequest
+from montjoyplaces import OverrideRequest
 
 response = client.override_place(
     "fsq_place_id",
@@ -182,7 +208,7 @@ response = client.override_place(
 ### Lookup US Cities
 
 ```python
-from montjoy_places import LookupNearestUsCitiesParams, SearchUsCitiesParams
+from montjoyplaces import LookupNearestUsCitiesParams, SearchUsCitiesParams
 
 nearest = client.lookup_nearest_us_cities(
     LookupNearestUsCitiesParams(lat=42.3601, lon=-71.0589, limit=5)
@@ -198,7 +224,7 @@ zip_lookup = client.lookup_us_zipcode("02108")
 ### Lookup Categories
 
 ```python
-from montjoy_places import GetCategoryChildrenParams, SearchCategoriesParams
+from montjoyplaces import GetCategoryChildrenParams, SearchCategoriesParams
 
 categories = client.search_categories(
     SearchCategoriesParams(q="coffee", limit=10)
@@ -218,7 +244,7 @@ The SDK currently includes methods for:
 
 - API identity: `who_am_i`
 - Groups: `list_groups`, `create_group`, `update_group`, `delete_group`
-- Custom places: `list_custom_places`, `create_custom_place`, `get_custom_place`, `update_custom_place`, `delete_custom_place`, `hide_custom_place`
+- Custom places: `list_custom_places`, `export_custom_places`, `import_custom_places`, `create_custom_place`, `get_custom_place`, `update_custom_place`, `delete_custom_place`, `hide_custom_place`
 - Place overrides: `override_place`
 - US city lookup: `lookup_nearest_us_cities`, `search_us_cities`, `lookup_us_zipcode`
 - Category lookup: `search_categories`, `get_category`, `get_category_children`
@@ -229,7 +255,7 @@ The SDK currently includes methods for:
 API failures raise `MontjoyPlacesError`.
 
 ```python
-from montjoy_places import MontjoyPlaces, MontjoyPlacesError
+from montjoyplaces import MontjoyPlaces, MontjoyPlacesError
 
 try:
     client = MontjoyPlaces("your-api-key")
@@ -245,7 +271,7 @@ except MontjoyPlacesError as exc:
 Sample programs are included in [`samples/`](./samples):
 
 - `basic.py` shows authentication, group listing, and search
-- `integration.py` exercises create, update, hide, list, and cleanup flows for groups and custom places
+- `integration.py` exercises create, update, hide, list, export, import, and cleanup flows for groups and custom places
 
 Run a sample with an API key set in the environment:
 

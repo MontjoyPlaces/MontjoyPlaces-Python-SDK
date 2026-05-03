@@ -4,7 +4,10 @@ import time
 from montjoyplaces import (
     CustomPlaceCreateRequest,
     CustomPlaceHideRequest,
+    CustomPlaceImportRow,
     CustomPlaceUpdateRequest,
+    CustomPlacesImportRequest,
+    ExportCustomPlacesParams,
     GroupCreateRequest,
     ListCustomPlacesParams,
     MontjoyPlaces,
@@ -75,6 +78,41 @@ def main() -> None:
                 ListCustomPlacesParams(groupId=group_id, limit=10, includeHidden=True)
             )
             print("group custom places:", [row.name for row in custom_places.rows])
+
+            exported_places = client.export_custom_places(
+                ExportCustomPlacesParams(groupId=group_id, limit=10, includeHidden=True)
+            )
+            print("exported custom places:", exported_places.count)
+
+            imported_places = client.import_custom_places(
+                CustomPlacesImportRequest(
+                    mode="upsert",
+                    rows=[
+                        CustomPlaceImportRow(
+                            custom_place_id=row.custom_place_id,
+                            group_id=row.group_id,
+                            fsq_place_id=row.fsq_place_id,
+                            owner_user_id=row.owner_user_id,
+                            source=row.source,
+                            name=row.name,
+                            latitude=row.latitude,
+                            longitude=row.longitude,
+                            address=row.address,
+                            locality=row.locality,
+                            region=row.region,
+                            postcode=row.postcode,
+                            country=row.country,
+                            website=row.website,
+                            tel=row.tel,
+                            email=row.email,
+                            tags=row.tags,
+                            meta=row.meta,
+                        )
+                        for row in exported_places.rows
+                    ],
+                )
+            )
+            print("imported custom places:", imported_places.imported)
 
             search = client.search_places(SearchPlacesParams(q="coffee near Boston MA", limit=3))
             first_place_id = next((row.fsq_place_id for row in search.rows if isinstance(row, SearchRowGlobal)), None)
